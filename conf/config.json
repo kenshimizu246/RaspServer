@@ -1,0 +1,7 @@
+{
+	"appdir": "/home/ken/projects/raspserver",
+	"pidfile": "/run/raspserver.pid",
+	"logdir": "/home/ken/projects/raspserver",
+	"port": 5911,
+	"daemon":false
+}
