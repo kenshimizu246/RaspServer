@@ -16,9 +16,9 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-/*
 #include <libwebsockets.h>
 
+/*
 #include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/log/trivial.hpp>
@@ -41,6 +41,7 @@
 #include <rapidjson/filewritestream.h>
 
 #include "Config.hpp"
+#include "session.h"
 /*
 #include "AppCtx.hpp"
 #include "MariaCppConnPool.hpp"
@@ -52,7 +53,6 @@
 #include "actions/Action.hpp"
 #include "actions/ErrorAction.hpp"
 #include "Dao.hpp"
-#include "session.h"
 #include "AppWebSocketWriter.hpp"
 */
 
@@ -74,29 +74,30 @@ class RaspServer {
 		static void signal_handler(int sig);
 		static void sighandler(int sig);
 		static void daemonShutdown();
+		static int  callback_raspserver(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len);
 
-//		struct lws_protocols *pp;
-//		struct lws_context_creation_info info;
+		struct lws_protocols *pp;
+		struct lws_context_creation_info info;
 		int force_exitx;
 		static int force_exit;
 		static int pidFilehandle;
-//		static struct lws_context *context;
+		static struct lws_context *context;
 };
 
 int RaspServer::force_exit = 0;
 int RaspServer::pidFilehandle;
-//struct lws_context * RaspServer::context;
+struct lws_context * RaspServer::context;
 
 RaspServer::RaspServer(){
-//	pp = new lws_protocols[2];
-//	pp[0].name = "quote";
-//	pp[0].callback = callback_quote_stock_option;
-//	pp[0].per_session_data_size = sizeof(struct per_session_data_quote);
-//	pp[0].rx_buffer_size = 8000;
-//	pp[1].name = NULL;
-//	pp[1].callback = NULL;
-//	pp[1].per_session_data_size = 0;
-//	pp[1].rx_buffer_size = 0;
+	pp = new lws_protocols[2];
+	pp[0].name = "quote";
+	pp[0].callback = callback_raspserver;
+	pp[0].per_session_data_size = sizeof(struct per_session_data_raspserver);
+	pp[0].rx_buffer_size = 8000;
+	pp[1].name = NULL;
+	pp[1].callback = NULL;
+	pp[1].per_session_data_size = 0;
+	pp[1].rx_buffer_size = 0;
 	force_exitx = 0;
 }
 
@@ -192,7 +193,7 @@ void RaspServer::daemonize(string rundir, string pidfile) {
 void RaspServer::sighandler(int sig)
 {
 	force_exit = 1;
-//	lws_cancel_service(context);
+	lws_cancel_service(context);
 }
 
 void RaspServer::init(){
@@ -218,26 +219,26 @@ void RaspServer::run(){
 
 //	Config::getInstance().setAppCtx(&appCtx);
 
-//	memset(&info, 0, sizeof info);
-//	info.port = Config::getInstance().getPort();
-//	info.protocols = pp;
-//	info.ssl_cert_filepath = NULL;
-//	info.ssl_private_key_filepath = NULL;
-	//info.extensions = lws_get_internal_extensions();
-//	info.extensions = NULL;
+	memset(&info, 0, sizeof info);
+	info.port = Config::getInstance().getPort();
+	info.protocols = pp;
+	info.ssl_cert_filepath = NULL;
+	info.ssl_private_key_filepath = NULL;
+//	info.extensions = lws_get_internal_extensions();
+	info.extensions = NULL;
 
-//	info.gid = -1;
-//	info.uid = -1;
-//	info.max_http_header_pool = 1;
-//	info.options = opts;
+	info.gid = -1;
+	info.uid = -1;
+	info.max_http_header_pool = 1;
+	info.options = opts;
     
 	signal(SIGINT, sighandler);
  
-//	context = lws_create_context(&info);
-//	if (context == NULL) {
-//		lwsl_err("libwebsocket init failed\n");
-//		return; // -1;
-//	}
+	context = lws_create_context(&info);
+	if (context == NULL) {
+		lwsl_err("libwebsocket init failed\n");
+		return; // -1;
+	}
  
 	// start conversation monitor...
 //	bool stopQt{false};
@@ -265,26 +266,26 @@ void RaspServer::run(){
 
 		ms = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 		if ((ms - oldms) > 50) {
-//			lws_callback_on_writable_all_protocol(context,
-//				&pp[0]);
+			lws_callback_on_writable_all_protocol(context,
+				&pp[0]);
 			oldms = ms;
 		}
 
-//		n = lws_service(context, 50);
+		n = lws_service(context, 50);
 	}//while n>=0
 	//BOOST_LOG_TRIVIAL(info) << "run while out";
 
-//	lws_context_destroy(context);
+	lws_context_destroy(context);
 	//BOOST_LOG_TRIVIAL(info) << "lws_context_destroy(context) end...";
 }
 
-/*
-int RaspServer::callback_quote_stock_option(struct lws *wsi, enum lws_callback_reasons reason,
+int RaspServer::callback_raspserver(struct lws *wsi, enum lws_callback_reasons reason,
 		void *user, void *in, size_t len)
 {
-	struct per_session_data_quote *pss = (struct per_session_data_quote *)user;
+	struct per_session_data_raspserver *pss = (struct per_session_data_raspserver *)user;
 	int n;
 
+/*
 	const string getqt("quote_request");
 	const string eqopt("calc_equity_option");
 	const string bondcalc("calc_bond");
@@ -293,17 +294,18 @@ int RaspServer::callback_quote_stock_option(struct lws *wsi, enum lws_callback_r
 	const string heartbeat("heartbeat");
 
 	string symbol;
+*/
 
 	unique_ptr<Document> rq;
 
 	switch (reason) {
 		case LWS_CALLBACK_ESTABLISHED:
-			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_ESTABLISHED start...";
+//			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_ESTABLISHED start...";
 			pss->status = INIT;
 			pss->buff = new string("");
-			pss->session = nullptr;
+//			pss->session = nullptr;
 			time(&(pss->start_time));
-			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_ESTABLISHED end..." << pss->start_time;
+//			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_ESTABLISHED end..." << pss->start_time;
 			break;
 
 		case LWS_CALLBACK_SERVER_WRITEABLE:
@@ -311,10 +313,11 @@ int RaspServer::callback_quote_stock_option(struct lws *wsi, enum lws_callback_r
 				break;
 			}
 
-			BOOST_LOG_TRIVIAL(info) << "request processing : " << pss->buff->c_str();
+//			BOOST_LOG_TRIVIAL(info) << "request processing : " << pss->buff->c_str();
 
 			rq.reset(new Document());
 
+/*
 			if ((*rq).Parse<0>(pss->buff->c_str()).HasParseError()){
 				BOOST_LOG_TRIVIAL(info) << "HasParseError...";
 			} else if ((*rq).HasMember("header")) {
@@ -368,45 +371,46 @@ int RaspServer::callback_quote_stock_option(struct lws *wsi, enum lws_callback_r
 				}
 			}
 			BOOST_LOG_TRIVIAL(info) << "before delete string...";
+*/
 			pss->buff->clear();
 			break;
 
 		case LWS_CALLBACK_RECEIVE:
-			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_RECEIVE start...";
+//			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_RECEIVE start...";
 			pss->buff->append((const char*)in, len);
 			lws_callback_on_writable_all_protocol(lws_get_context(wsi), lws_get_protocol(wsi));
-			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_RECEIVE end... : " << pss->buff;
+//			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_RECEIVE end... : " << pss->buff;
 			break;
 
 		case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
 			break;
 
 		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE:
-			BOOST_LOG_TRIVIAL(info) << "closing connection...:" << (pss == nullptr ? "nullptr" : "not nullptr");
+//			BOOST_LOG_TRIVIAL(info) << "closing connection...:" << (pss == nullptr ? "nullptr" : "not nullptr");
 			if(pss != nullptr){
-				BOOST_LOG_TRIVIAL(info) << "closing connection... stat:" << pss->status
-																<< " session:" << (pss->session == nullptr ? "nullptr" : "not nullptr")
-																<< " pss len:" << len
-																<< " start tm:" << pss->start_time;
+//				BOOST_LOG_TRIVIAL(info) << "closing connection... stat:" << pss->status
+//																<< " session:" << (pss->session == nullptr ? "nullptr" : "not nullptr")
+//																<< " pss len:" << len
+//																<< " start tm:" << pss->start_time;
 				delete pss->buff;
 
-				if(pss->status == SESSION &&  pss->session != nullptr){
-					Config::getInstance().getAppCtx()->getSessionManager()->logout(pss->session);
-				}
+//				if(pss->status == SESSION &&  pss->session != nullptr){
+//					Config::getInstance().getAppCtx()->getSessionManager()->logout(pss->session);
+//				}
 			}
 
 			lwsl_notice("LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: len %d\n", len);
 			for (n = 0; n < (int)len; n++)
 				lwsl_notice(" %d: 0x%02X\n", n, ((unsigned char *)in)[n]);
-			BOOST_LOG_TRIVIAL(info) << "closing connection done...";
+//			BOOST_LOG_TRIVIAL(info) << "closing connection done...";
 			break;
 
 		default:
 			break;
 	}
 	return 0;
-}//callback_quote_stock_option
-*/
+}//callback_raspserver
+
 
 
 }
