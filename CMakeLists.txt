@@ -19,6 +19,8 @@ include_directories(
 add_executable(RaspServer
 src/Config.cpp
 src/App.cpp
+src/ActionFactory.cpp
+src/actions/NullAction.cpp
 	)
 target_link_libraries(RaspServer
 	websockets

@@ -18,23 +18,6 @@
 
 #include <libwebsockets.h>
 
-/*
-#include <boost/shared_ptr.hpp>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/core.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sources/logger.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/console.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/support/date_time.hpp>
-#include <boost/log/sinks/sync_frontend.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/sinks/text_ostream_backend.hpp>
-#include <boost/log/attributes/named_scope.hpp>
-*/
-
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
@@ -42,19 +25,8 @@
 
 #include "Config.hpp"
 #include "session.h"
-/*
-#include "AppCtx.hpp"
-#include "MariaCppConnPool.hpp"
-#include "MariaDbDaoFactory.hpp"
-#include "Executor.hpp"
-#include "ActionExecutor.hpp"
-#include "LoginExecutor.hpp"
 #include "ActionFactory.hpp"
 #include "actions/Action.hpp"
-#include "actions/ErrorAction.hpp"
-#include "Dao.hpp"
-#include "AppWebSocketWriter.hpp"
-*/
 
 #define DAEMON_NAME "simpledaemon"
 
@@ -224,7 +196,7 @@ void RaspServer::run(){
 	info.protocols = pp;
 	info.ssl_cert_filepath = NULL;
 	info.ssl_private_key_filepath = NULL;
-//	info.extensions = lws_get_internal_extensions();
+	info.extensions = lws_get_internal_extensions();
 	info.extensions = NULL;
 
 	info.gid = -1;
@@ -285,27 +257,17 @@ int RaspServer::callback_raspserver(struct lws *wsi, enum lws_callback_reasons r
 	struct per_session_data_raspserver *pss = (struct per_session_data_raspserver *)user;
 	int n;
 
-/*
-	const string getqt("quote_request");
-	const string eqopt("calc_equity_option");
-	const string bondcalc("calc_bond");
 	const string type_action("action");
 	const string login("login");
 	const string heartbeat("heartbeat");
-
-	string symbol;
-*/
 
 	unique_ptr<Document> rq;
 
 	switch (reason) {
 		case LWS_CALLBACK_ESTABLISHED:
-//			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_ESTABLISHED start...";
 			pss->status = INIT;
 			pss->buff = new string("");
-//			pss->session = nullptr;
 			time(&(pss->start_time));
-//			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_ESTABLISHED end..." << pss->start_time;
 			break;
 
 		case LWS_CALLBACK_SERVER_WRITEABLE:
@@ -313,96 +275,44 @@ int RaspServer::callback_raspserver(struct lws *wsi, enum lws_callback_reasons r
 				break;
 			}
 
-//			BOOST_LOG_TRIVIAL(info) << "request processing : " << pss->buff->c_str();
-
 			rq.reset(new Document());
 
-/*
 			if ((*rq).Parse<0>(pss->buff->c_str()).HasParseError()){
-				BOOST_LOG_TRIVIAL(info) << "HasParseError...";
+				// BOOST_LOG_TRIVIAL(info) << "HasParseError...";
 			} else if ((*rq).HasMember("header")) {
 				if ((*rq)["header"].HasMember("type")){
-					BOOST_LOG_TRIVIAL(info) << "header.type : " << (*rq)["header"]["type"].GetString();
 					if((*rq)["header"]["type"].GetString() == type_action) {
 						ActionFactory af;
-						unique_ptr<Executor> executor;
-						AppCtx* appCtx = Config::getInstance().getAppCtx();
 
 						if ((*rq)["header"].HasMember("action_name")){
-							if ((*rq)["header"]["action_name"].GetString() == login) {
-								executor.reset(new LoginExecutor(shared_ptr<AppWebSocketWriter>(new AppWebSocketWriter(wsi)), pss, move(rq)));
-							} else {
-								if ((*rq)["header"].HasMember("sessionId")) {
-									string sessionId((*rq)["header"]["sessionId"].GetString());
-									shared_ptr<Session> session = appCtx->getSessionManager()->getSessionBySessionID(sessionId);
-									if(session != nullptr){
-										// IMPORTANT: Enhancement is mandatory.
-										shared_ptr<Dao> dao = appCtx->getDaoFactory()->create();
-										dao->addAccessHistory(session);
-										if(!session->writer){
-											BOOST_LOG_TRIVIAL(info) << "assing writer to " << sessionId;
-											session->writer = shared_ptr<AppWebSocketWriter>(new AppWebSocketWriter(wsi));
-										}
-										pss->session = session;
-										string actionName((*rq)["header"]["action_name"].GetString());
-										unique_ptr<Action> action{af.getActionHandler(actionName, sessionId, appCtx)};
-										executor.reset(new ActionExecutor(move(action), session->writer, move(rq)));
-									}else{
-										BOOST_LOG_TRIVIAL(error) << "Session is not available! [" << sessionId << "]";
-										executor.reset(new ActionExecutor(move(unique_ptr<Action>(new ErrorAction("your session is not available!"))), shared_ptr<AppWebSocketWriter>(new AppWebSocketWriter(wsi)), move(rq)));
-									}
-								} else {
-									BOOST_LOG_TRIVIAL(error) << "Session ID is not available in the header!";
-									executor.reset(new ActionExecutor(move(unique_ptr<Action>(new ErrorAction("your session Id is not available in your message header!"))), shared_ptr<AppWebSocketWriter>(new AppWebSocketWriter(wsi)), move(rq)));
-								}
-							}
-							if(executor){
-								BOOST_LOG_TRIVIAL(info) << "thread...executor";
-								thread tth([px = move(executor)]{
-									BOOST_LOG_TRIVIAL(info) << "before execute executor...";
-									px->execute();
-									BOOST_LOG_TRIVIAL(info) << "after execute executor...";
-								});
-								tth.detach();
-							}
-							BOOST_LOG_TRIVIAL(info) << "thread_handers.push_back...";
-						} // end of if ((*rq)["header"].HasMember("action_name")){
+							string actionName((*rq)["header"]["action_name"].GetString());
+							unique_ptr<Action> action{af.getActionHandler(actionName)};
+							string rstr;
+							action->doAction(move(rq), rstr);
+						}
 					}
 				}
 			}
-			BOOST_LOG_TRIVIAL(info) << "before delete string...";
-*/
 			pss->buff->clear();
 			break;
 
 		case LWS_CALLBACK_RECEIVE:
-//			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_RECEIVE start...";
 			pss->buff->append((const char*)in, len);
 			lws_callback_on_writable_all_protocol(lws_get_context(wsi), lws_get_protocol(wsi));
-//			BOOST_LOG_TRIVIAL(info) << "LWS_CALLBACK_RECEIVE end... : " << pss->buff;
 			break;
 
 		case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
 			break;
 
 		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE:
-//			BOOST_LOG_TRIVIAL(info) << "closing connection...:" << (pss == nullptr ? "nullptr" : "not nullptr");
 			if(pss != nullptr){
-//				BOOST_LOG_TRIVIAL(info) << "closing connection... stat:" << pss->status
-//																<< " session:" << (pss->session == nullptr ? "nullptr" : "not nullptr")
-//																<< " pss len:" << len
-//																<< " start tm:" << pss->start_time;
 				delete pss->buff;
-
-//				if(pss->status == SESSION &&  pss->session != nullptr){
-//					Config::getInstance().getAppCtx()->getSessionManager()->logout(pss->session);
-//				}
 			}
 
 			lwsl_notice("LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: len %d\n", len);
-			for (n = 0; n < (int)len; n++)
+			for (n = 0; n < (int)len; n++) {
 				lwsl_notice(" %d: 0x%02X\n", n, ((unsigned char *)in)[n]);
-//			BOOST_LOG_TRIVIAL(info) << "closing connection done...";
+			}
 			break;
 
 		default:
