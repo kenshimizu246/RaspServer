@@ -21,10 +21,13 @@ src/Config.cpp
 src/App.cpp
 src/ActionFactory.cpp
 src/actions/NullAction.cpp
+src/PCA9685.cpp
+src/actions/PCA9685Action.cpp
 	)
 target_link_libraries(RaspServer
 	websockets
 	pthread
+	wiringPi
 	)
 
 

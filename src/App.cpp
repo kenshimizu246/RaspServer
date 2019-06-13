@@ -71,6 +71,9 @@ RaspServer::RaspServer(){
 	pp[1].per_session_data_size = 0;
 	pp[1].rx_buffer_size = 0;
 	force_exitx = 0;
+
+
+
 }
 
 void RaspServer::daemonShutdown(){

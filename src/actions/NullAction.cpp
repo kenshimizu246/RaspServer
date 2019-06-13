@@ -47,7 +47,7 @@ void NullAction::doAction(unique_ptr<Document> rq, string& ss){
 
 	res.Accept(writer);
 
-	ss.append(buffer.GetString(), buffer.GetLength());
+//	ss.append(buffer.GetString(), buffer.GetLength());
 }
 
 }

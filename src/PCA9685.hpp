@@ -14,25 +14,35 @@ class PCA9685 {
 	private:
 		PCA9685();
 		~PCA9685();
+		static int baseReg(int pin);
+		static void internalPwmWrite(struct wiringPiNodeStruct *node, int pin, int value);
+		static void internalOnOffWrite(struct wiringPiNodeStruct *node, int pin, int value);
+		static int internalOffRead(struct wiringPiNodeStruct *node, int pin);
+		static int internalOnRead(struct wiringPiNodeStruct *node, int pin);
+
+		static void FullOn(int fd, int pin, int tf);
+		static void FullOff(int fd, int pin, int tf);
+		static void PWMWrite(int fd, int pin, int on, int off);
+		static void PWMRead(int fd, int pin, int *on, int *off);
+
 		bool initialized;
 		int fd;
 
 	public:
 		bool isInitialized();
 
-		void wiringPiSetupGpio();
-		void pca9685Setup(const int pinBase, const int i2cAddress/* = 0x40*/, float freq/* = 50*/);
-		void pca9685PWMFreq(float freq);
-		void pca9685PWMReset();
-		void pca9685PWMWrite( int pin, int on, int off);
-		void pca9685PWMRead(int pin, int *on, int *off);
+		void Setup(const int pinBase, const int i2cAddress/* = 0x40*/, float freq/* = 50*/);
+		void PWMFreq(float freq);
+		void PWMReset();
+		void PWMWrite( int pin, int on, int off);
+		void PWMRead(int pin, int *on, int *off);
 
-		void pca9685FullOn(int pin, int tf);
-		void pca9685FullOff(int pin, int tf);
+		void FullOn(int pin, int tf);
+		void FullOff(int pin, int tf);
 
 		static PCA9685& getInstance() {
-			static PCA9685 pca9685;
-			return pca9685;
+			static PCA9685 instance;
+			return instance;
 		}
 };
 
