@@ -23,6 +23,7 @@ src/ActionFactory.cpp
 src/actions/NullAction.cpp
 src/PCA9685.cpp
 src/actions/PCA9685Action.cpp
+src/actions/RelayAction.cpp
 	)
 target_link_libraries(RaspServer
 	websockets
