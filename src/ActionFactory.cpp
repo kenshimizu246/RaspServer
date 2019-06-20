@@ -9,6 +9,8 @@
 #include "actions/Action.hpp"
 #include "actions/NullAction.hpp"
 #include "actions/ErrorAction.hpp"
+#include "actions/PCA9685Action.hpp"
+#include "actions/RelayAction.hpp"
 
 using namespace std;
 using namespace rapidjson;
@@ -23,9 +25,12 @@ ActionFactory::~ActionFactory(){
 
 Action* ActionFactory::getActionHandler(string& actionName){
 	const string move("move");
+	const string onoff("onoff");
 
 	if (actionName == move) {
-		return new NullAction();
+		return new PCA9685Action();
+	} else if (actionName == onoff) {
+		return new RelayAction();
 	}
 	return new NullAction();
 }
