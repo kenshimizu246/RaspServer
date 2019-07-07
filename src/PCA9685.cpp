@@ -41,62 +41,7 @@ PCA9685::PCA9685() {
 PCA9685::~PCA9685() {
 }
 
-
-void PCA9685::internalPwmWrite(struct wiringPiNodeStruct *node, int pin, int value)
-{
-	int fd   = node->fd;
-	int ipin = pin - node->pinBase;
-
-	if (value >= 4096)
-		FullOn(fd, ipin, 1);
-	else if (value > 0)
-		PWMWrite(fd, ipin, 0, value);    // (Deactivates full-on and off by itself)
-	else
-		FullOff(fd, ipin, 1);
-}
-
-void PCA9685::internalOnOffWrite(struct wiringPiNodeStruct *node, int pin, int value)
-{
-        int fd   = node->fd;
-        int ipin = pin - node->pinBase;
-
-        if (value)
-                FullOn(fd, ipin, 1);
-        else
-                FullOff(fd, ipin, 1);
-}
-
-int PCA9685::internalOffRead(struct wiringPiNodeStruct *node, int pin)
-{
-        int fd   = node->fd;
-        int ipin = pin - node->pinBase;
-
-        int off;
-        PWMRead(fd, ipin, 0, &off);
-
-        return off;
-}
-
-int PCA9685::internalOnRead(struct wiringPiNodeStruct *node, int pin)
-{
-        int fd   = node->fd;
-        int ipin = pin - node->pinBase;
-
-        int on;
-        PWMRead(fd, ipin, &on, 0);
-
-        return on;
-}
-
-
-
 void PCA9685::Setup(const int pinBase, const int i2cAddress/* = 0x40*/, float freq/* = 50*/){
-	struct wiringPiNodeStruct *node = wiringPiNewNode(pinBase, PIN_ALL + 1);
-
-	// Check if pinBase is available
-	if (!node)
-		throw runtime_error("wiringPiNewNode error!");
-
 	// Check i2c address
 	fd = wiringPiI2CSetup(i2cAddress);
 	if (fd < 0)
@@ -112,12 +57,6 @@ void PCA9685::Setup(const int pinBase, const int i2cAddress/* = 0x40*/, float fr
 	if (freq > 0)
 		PWMFreq(freq);
 
-
-	node->fd                        = fd;
-	node->pwmWrite          = internalPwmWrite;
-	node->digitalWrite      = internalOnOffWrite;
-	node->digitalRead       = internalOffRead;
-	node->analogRead        = internalOnRead;
 	initialized = true;
 }
 

@@ -3,6 +3,8 @@
 #include <exception>
 #include <stdexcept>
 
+#include "SessionManager.hpp"
+
 using namespace std;
 
 #ifndef _Config_hpp
@@ -20,6 +22,7 @@ class Config {
 		string pidfile;
 		int port;
 		bool daemon;
+		SessionManager *sessionManager;
 
 	public:
 		void load(const char* filename);
@@ -30,6 +33,9 @@ class Config {
 		bool isInitialized();
 
 		bool isDaemon();
+
+		void setSessionManager(SessionManager* sm);
+		SessionManager* getSessionManager();
 
 		static Config& getInstance() {
 			static Config config;

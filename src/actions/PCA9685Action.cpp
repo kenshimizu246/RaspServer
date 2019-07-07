@@ -53,10 +53,12 @@ void PCA9685Action::doAction(unique_ptr<Document> rq, string& ss){
     throw invalid_argument("tick is mandatory!");
   }
 
-  int pin = (*rq)["body"]["pin"].GetInt() + PIN_BASE;
+  int pin = (*rq)["body"]["pin"].GetInt();
   int tick = (*rq)["body"]["tick"].GetInt();
 
-  pwmWrite(pin, tick);
+cout << "pin:" << pin << endl;
+
+  raspserver::PCA9685::getInstance().PWMWrite(pin,0,tick);
 
   hdr.AddMember("type", type, alloc);
 

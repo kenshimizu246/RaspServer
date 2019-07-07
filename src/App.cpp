@@ -23,10 +23,21 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/filewritestream.h>
 
-#include "Config.hpp"
 #include "session.h"
+#include "Config.hpp"
 #include "ActionFactory.hpp"
 #include "actions/Action.hpp"
+#include "Session.hpp"
+#include "SessionManager.hpp"
+#include "AppWebSocketWriter.hpp"
+
+#include "PCA9685.hpp"
+
+#include <wiringPi.h>
+
+#define PIN_BASE 300
+#define MAX_PWM 4096
+#define HERTZ 50
 
 #define DAEMON_NAME "simpledaemon"
 
@@ -54,6 +65,7 @@ class RaspServer {
 		static int force_exit;
 		static int pidFilehandle;
 		static struct lws_context *context;
+		SessionManager sessionManager;
 };
 
 int RaspServer::force_exit = 0;
@@ -71,9 +83,6 @@ RaspServer::RaspServer(){
 	pp[1].per_session_data_size = 0;
 	pp[1].rx_buffer_size = 0;
 	force_exitx = 0;
-
-
-
 }
 
 void RaspServer::daemonShutdown(){
@@ -173,6 +182,10 @@ void RaspServer::sighandler(int sig)
 
 void RaspServer::init(){
 //	BOOST_LOG_TRIVIAL(info) << "end of server initialization... init";
+	raspserver::PCA9685::getInstance().Setup(PIN_BASE, 0x40, HERTZ);
+	raspserver::PCA9685::getInstance().PWMReset();
+
+	//raspserver::PCA9685::getInstance().
 }
 
 void RaspServer::run(){
@@ -192,7 +205,7 @@ void RaspServer::run(){
 //	init_log();
 
 
-//	Config::getInstance().setAppCtx(&appCtx);
+	Config::getInstance().setSessionManager(&sessionManager);
 
 	memset(&info, 0, sizeof info);
 	info.port = Config::getInstance().getPort();
@@ -271,6 +284,8 @@ int RaspServer::callback_raspserver(struct lws *wsi, enum lws_callback_reasons r
 			pss->status = INIT;
 			pss->buff = new string("");
 			time(&(pss->start_time));
+			pss->session = Config::getInstance().getSessionManager()->newSession();
+			pss->session->writer = shared_ptr<AppWebSocketWriter>(new AppWebSocketWriter(wsi));
 			break;
 
 		case LWS_CALLBACK_SERVER_WRITEABLE:
@@ -310,6 +325,7 @@ int RaspServer::callback_raspserver(struct lws *wsi, enum lws_callback_reasons r
 		case LWS_CALLBACK_WS_PEER_INITIATED_CLOSE:
 			if(pss != nullptr){
 				delete pss->buff;
+				Config::getInstance().getSessionManager()->del(pss->session);
 			}
 
 			lwsl_notice("LWS_CALLBACK_WS_PEER_INITIATED_CLOSE: len %d\n", len);

@@ -146,5 +146,13 @@ bool Config::isInitialized() {
 	return initialized;
 }
 
+SessionManager* Config::getSessionManager(){
+	return sessionManager;
+}
+
+void Config::setSessionManager(SessionManager* sm){
+	sessionManager = sm;
+}
+
 }
 

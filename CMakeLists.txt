@@ -20,8 +20,11 @@ add_executable(RaspServer
 src/Config.cpp
 src/App.cpp
 src/ActionFactory.cpp
-src/actions/NullAction.cpp
+src/AppWebSocketWriter.cpp
+src/Session.cpp
+src/SessionManager.cpp
 src/PCA9685.cpp
+src/actions/NullAction.cpp
 src/actions/PCA9685Action.cpp
 src/actions/RelayAction.cpp
 	)
@@ -29,6 +32,7 @@ target_link_libraries(RaspServer
 	websockets
 	pthread
 	wiringPi
+	uuid
 	)
 
 

@@ -1,7 +1,7 @@
 #include <string>
 #include <memory>
 
-//#include "Session.hpp"
+#include "Session.hpp"
 
 #ifndef _session_for_lws
 #define _session_for_lws
@@ -17,6 +17,8 @@ struct per_session_data_raspserver {
 	STATUS status;
 	time_t start_time;
 	string *buff;
+	time_t session_start_time;
+	shared_ptr<Session> session;
 };
 
 }

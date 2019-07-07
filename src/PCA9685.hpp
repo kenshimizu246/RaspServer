@@ -14,16 +14,12 @@ class PCA9685 {
 	private:
 		PCA9685();
 		~PCA9685();
-		static int baseReg(int pin);
-		static void internalPwmWrite(struct wiringPiNodeStruct *node, int pin, int value);
-		static void internalOnOffWrite(struct wiringPiNodeStruct *node, int pin, int value);
-		static int internalOffRead(struct wiringPiNodeStruct *node, int pin);
-		static int internalOnRead(struct wiringPiNodeStruct *node, int pin);
+		int baseReg(int pin);
 
-		static void FullOn(int fd, int pin, int tf);
-		static void FullOff(int fd, int pin, int tf);
-		static void PWMWrite(int fd, int pin, int on, int off);
-		static void PWMRead(int fd, int pin, int *on, int *off);
+		void FullOn(int fd, int pin, int tf);
+		void FullOff(int fd, int pin, int tf);
+		void PWMWrite(int fd, int pin, int on, int off);
+		void PWMRead(int fd, int pin, int *on, int *off);
 
 		bool initialized;
 		int fd;
