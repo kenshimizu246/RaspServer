@@ -57,6 +57,7 @@ void PCA9685Action::doAction(unique_ptr<Document> rq, string& ss){
   int tick = (*rq)["body"]["tick"].GetInt();
 
 cout << "pin:" << pin << endl;
+cout << "tick:" << tick << endl;
 
   raspserver::PCA9685::getInstance().PWMWrite(pin,0,tick);
 
