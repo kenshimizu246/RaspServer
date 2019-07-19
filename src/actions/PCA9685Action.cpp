@@ -21,10 +21,6 @@
 #include "../PCA9685.hpp"
 #include "PCA9685Action.hpp"
 
-#define PIN_BASE 300
-#define MAX_PWM 4096
-#define HERTZ 50
-
 using namespace rapidjson;
 
 namespace raspserver {
