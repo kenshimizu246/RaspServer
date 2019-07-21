@@ -10,6 +10,7 @@
 #include <rapidjson/filewritestream.h>
 
 #include "Action.hpp"
+#include "../AppCtx.hpp"
 
 using namespace std;
 using namespace rapidjson;

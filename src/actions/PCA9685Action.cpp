@@ -19,6 +19,7 @@
 
 #include <wiringPi.h>
 #include "../PCA9685.hpp"
+#include "../AppCtx.hpp"
 #include "PCA9685Action.hpp"
 
 using namespace rapidjson;
@@ -37,6 +38,7 @@ void PCA9685Action::doAction(unique_ptr<Document> rq, string& ss){
   Value hdr(kObjectType);
   Value bdy(kObjectType);
   Value type("null");
+  unsigned int id = 0;
 
   StringBuffer buffer;
   Writer<StringBuffer> writer(buffer);
@@ -49,13 +51,22 @@ void PCA9685Action::doAction(unique_ptr<Document> rq, string& ss){
     throw invalid_argument("tick is mandatory!");
   }
 
-  int pin = (*rq)["body"]["pin"].GetInt();
-  int tick = (*rq)["body"]["tick"].GetInt();
+  if((*rq)["body"].HasMember("id")){
+    id = (*rq)["body"]["id"].GetInt();
+  }
+
+  unsigned int pin = (*rq)["body"]["pin"].GetInt();
+  unsigned int tick = (*rq)["body"]["tick"].GetInt();
 
 cout << "pin:" << pin << endl;
 cout << "tick:" << tick << endl;
 
-  raspserver::PCA9685::getInstance().PWMWrite(pin,0,tick);
+  if(raspserver::AppCtx::getInstance().getSizeOfPCA9685() > (id + 1)){
+    throw invalid_argument("id is not available in the list!");
+  }
+  shared_ptr<PCA9685> pca = raspserver::AppCtx::getInstance().getPCA9685(id);
+
+  pca->PWMWrite(pin,0,tick);
 
   hdr.AddMember("type", type, alloc);
 

@@ -12,8 +12,6 @@ namespace raspserver {
 
 class PCA9685 {
 	private:
-		PCA9685();
-		~PCA9685();
 		int baseReg(int pin);
 
 		void FullOn(int fd, int pin, int tf);
@@ -25,9 +23,12 @@ class PCA9685 {
 		int fd;
 
 	public:
+		PCA9685();
+		~PCA9685();
+
 		bool isInitialized();
 
-		void Setup(const int pinBase, const int i2cAddress/* = 0x40*/, float freq/* = 50*/);
+		void Setup(const int i2cAddress/* = 0x40*/, float freq/* = 50*/);
 		void PWMFreq(float freq);
 		void PWMReset();
 		void PWMWrite( int pin, int on, int off);
@@ -36,10 +37,10 @@ class PCA9685 {
 		void FullOn(int pin, int tf);
 		void FullOff(int pin, int tf);
 
-		static PCA9685& getInstance() {
-			static PCA9685 instance;
-			return instance;
-		}
+//		static PCA9685& getInstance() {
+//			static PCA9685 instance;
+//			return instance;
+//		}
 };
 
 }

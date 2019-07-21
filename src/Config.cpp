@@ -8,6 +8,7 @@
 #include <iostream>
 #include <exception>
 #include <stdexcept>
+#include <sstream>
 
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -20,6 +21,7 @@ using namespace std;
 using namespace rapidjson;
 
 namespace raspserver {
+
 
 Config::Config() {
 	initialized = false;
@@ -37,6 +39,9 @@ void Config::load(const char* filename){
 	const char *clogdir = "logdir";
 	const char *cappdir = "appdir";
 	const char *cport = "port";
+	const char *i2c = "i2c";
+	const char *i2c_address = "address";
+	const char *i2c_hertz   = "hertz";
 
 	const char *cDaemon = "daemon";
 
@@ -52,6 +57,26 @@ void Config::load(const char* filename){
 
 	if (doc.Parse<0>(str.c_str()).HasParseError()) {
 		throw runtime_error("configuration parse error!");
+	}
+
+	if (doc.HasMember(i2c) && doc[i2c].IsArray()) {
+		const Value& i2cNode = doc[i2c];
+		for(SizeType i = 0; i < i2cNode.Size(); i++){
+			if (!i2cNode[i].HasMember(i2c_address)) {
+				throw runtime_error("No address!");
+			}
+			if (!i2cNode[i].HasMember(i2c_hertz)) {
+				throw runtime_error("No hertz!");
+			}
+			shared_ptr<I2CConf> p;
+			unsigned int x;
+			std::stringstream ss;
+			ss << std::hex << i2cNode[i][i2c_address].GetString();
+			ss >> x;
+			cout << static_cast<int>(x) << std::endl;
+			p = shared_ptr<I2CConf>(new I2CConf(x, i2cNode[i][i2c_hertz].GetInt()));
+			i2cs.push_back(p);
+		}
 	}
 
 	// pidfile
@@ -152,6 +177,13 @@ SessionManager* Config::getSessionManager(){
 
 void Config::setSessionManager(SessionManager* sm){
 	sessionManager = sm;
+}
+
+shared_ptr<I2CConf> Config::getI2CConf(int i){
+	return i2cs.at(i);
+}
+unsigned int Config::getI2CSize(){
+	return i2cs.size();
 }
 
 }

@@ -41,7 +41,7 @@ PCA9685::PCA9685() {
 PCA9685::~PCA9685() {
 }
 
-void PCA9685::Setup(const int pinBase, const int i2cAddress/* = 0x40*/, float freq/* = 50*/){
+void PCA9685::Setup(const int i2cAddress/* = 0x40*/, float freq/* = 50*/){
 	// Check i2c address
 	fd = wiringPiI2CSetup(i2cAddress);
 	if (fd < 0)

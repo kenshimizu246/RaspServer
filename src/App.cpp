@@ -30,13 +30,12 @@
 #include "Session.hpp"
 #include "SessionManager.hpp"
 #include "AppWebSocketWriter.hpp"
+#include "AppCtx.hpp"
 
 #include "PCA9685.hpp"
 
 #include <wiringPi.h>
 
-#define PIN_BASE 300
-#define MAX_PWM 4096
 #define HERTZ 50
 
 #define DAEMON_NAME "simpledaemon"
@@ -182,10 +181,15 @@ void RaspServer::sighandler(int sig)
 
 void RaspServer::init(){
 //	BOOST_LOG_TRIVIAL(info) << "end of server initialization... init";
-	raspserver::PCA9685::getInstance().Setup(PIN_BASE, 0x40, HERTZ);
-	raspserver::PCA9685::getInstance().PWMReset();
 
-	//raspserver::PCA9685::getInstance().
+	int size = Config::getInstance().getI2CSize();
+	for(int i = 0; i < size; i++){
+		shared_ptr<I2CConf> p = Config::getInstance().getI2CConf(i);
+		shared_ptr<PCA9685> pca = shared_ptr<PCA9685>(new PCA9685());
+		pca->Setup(p->address, p->hertz);
+		pca->PWMReset();
+		raspserver::AppCtx::getInstance().add(pca);
+	}
 }
 
 void RaspServer::run(){

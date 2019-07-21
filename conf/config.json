@@ -3,5 +3,10 @@
 	"pidfile": "/run/raspserver.pid",
 	"logdir": "/home/ken/projects/raspserver",
 	"port": 5911,
-	"daemon":false
+	"daemon":false,
+	"i2c":[{
+			"address":"0x40",
+			"hertz":50
+		}
+	]
 }

@@ -12,6 +12,14 @@ using namespace std;
 
 namespace raspserver {
 
+class I2CConf {
+	public:
+		unsigned int address;
+		unsigned int hertz;
+		I2CConf(unsigned int address, unsigned int hertz): address(address), hertz(hertz) {
+		}
+};
+
 class Config {
 	private:
 		Config();
@@ -25,12 +33,15 @@ class Config {
 		SessionManager *sessionManager;
 
 	public:
+		vector<shared_ptr<I2CConf>> i2cs;
 		void load(const char* filename);
 		string getAppDir();
 		string getLogDir();
 		string getPidFile();
 		int getPort();
 		bool isInitialized();
+		shared_ptr<I2CConf> getI2CConf(int i);
+		unsigned int getI2CSize();
 
 		bool isDaemon();
 
