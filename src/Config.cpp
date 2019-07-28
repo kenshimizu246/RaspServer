@@ -42,6 +42,9 @@ void Config::load(const char* filename){
 	const char *i2c = "i2c";
 	const char *i2c_address = "address";
 	const char *i2c_hertz   = "hertz";
+	const char *hcsr04 = "hc-sr04";
+	const char *hcsr04_pin_trig = "pinTrig";
+	const char *hcsr04_pin_echo = "pinEcho";
 
 	const char *cDaemon = "daemon";
 
@@ -76,6 +79,24 @@ void Config::load(const char* filename){
 			cout << static_cast<int>(x) << std::endl;
 			p = shared_ptr<I2CConf>(new I2CConf(x, i2cNode[i][i2c_hertz].GetInt()));
 			i2cs.push_back(p);
+		}
+	}
+
+	if (doc.HasMember(hcsr04) && doc[hcsr04].IsArray()) {
+		const Value& hcsr04Node = doc[hcsr04];
+		for(SizeType i = 0; i < hcsr04Node.Size(); i++){
+			if (!hcsr04Node[i].HasMember(hcsr04_pin_trig)) {
+				throw runtime_error("No Trigger Pin!");
+			}
+			if (!hcsr04Node[i].HasMember(hcsr04_pin_echo)) {
+				throw runtime_error("No Echo Pin!");
+			}
+			shared_ptr<HcSr04Conf> p;
+			p = shared_ptr<HcSr04Conf>(new HcSr04Conf(
+hcsr04Node[i][hcsr04_pin_trig].GetInt(),
+hcsr04Node[i][hcsr04_pin_echo].GetInt()
+));
+			hcsr04s.push_back(p);
 		}
 	}
 
@@ -184,6 +205,13 @@ shared_ptr<I2CConf> Config::getI2CConf(int i){
 }
 unsigned int Config::getI2CSize(){
 	return i2cs.size();
+}
+
+shared_ptr<HcSr04Conf> Config::getHcSr04Conf(int i){
+	return hcsr04s.at(i);
+}
+unsigned int Config::getHcSr04ConfSize(){
+	return hcsr04s.size();
 }
 
 }

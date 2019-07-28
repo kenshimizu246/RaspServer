@@ -8,5 +8,11 @@
 			"address":"0x40",
 			"hertz":50
 		}
+	],
+	"hc-sr04":[{
+			"pinTrig":4,
+			"pinEcho":5,
+			"interval":1000,
+		}
 	]
 }

@@ -33,6 +33,7 @@
 #include "AppCtx.hpp"
 
 #include "PCA9685.hpp"
+#include "HcSr04.hpp"
 
 #include <wiringPi.h>
 
@@ -182,13 +183,21 @@ void RaspServer::sighandler(int sig)
 void RaspServer::init(){
 //	BOOST_LOG_TRIVIAL(info) << "end of server initialization... init";
 
-	int size = Config::getInstance().getI2CSize();
+	int size = 0;
+	size = Config::getInstance().getI2CSize();
 	for(int i = 0; i < size; i++){
 		shared_ptr<I2CConf> p = Config::getInstance().getI2CConf(i);
 		shared_ptr<PCA9685> pca = shared_ptr<PCA9685>(new PCA9685());
 		pca->Setup(p->address, p->hertz);
 		pca->PWMReset();
 		raspserver::AppCtx::getInstance().add(pca);
+	}
+
+	size = Config::getInstance().getHcSr04ConfSize();
+	for(int i = 0; i < size; i++){
+		shared_ptr<HcSr04Conf> p = Config::getInstance().getHcSr04Conf(i);
+		shared_ptr<HcSr04> hcsr04 = shared_ptr<HcSr04>(new HcSr04(p->pinTrig, p->pinEcho));
+		raspserver::AppCtx::getInstance().add(hcsr04);
 	}
 }
 
@@ -375,3 +384,4 @@ int main(int argc, char **argv)
 
 	return 0;
 } //main
+

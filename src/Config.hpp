@@ -20,6 +20,14 @@ class I2CConf {
 		}
 };
 
+class HcSr04Conf{
+	public:
+		unsigned int pinTrig;
+		unsigned int pinEcho;
+		HcSr04Conf(unsigned int pinTrig,unsigned int pinEcho):pinTrig(pinTrig),pinEcho(pinEcho) {
+		}
+};
+
 class Config {
 	private:
 		Config();
@@ -34,6 +42,7 @@ class Config {
 
 	public:
 		vector<shared_ptr<I2CConf>> i2cs;
+		vector<shared_ptr<HcSr04Conf>> hcsr04s;
 		void load(const char* filename);
 		string getAppDir();
 		string getLogDir();
@@ -42,6 +51,8 @@ class Config {
 		bool isInitialized();
 		shared_ptr<I2CConf> getI2CConf(int i);
 		unsigned int getI2CSize();
+		shared_ptr<HcSr04Conf> getHcSr04Conf(int i);
+		unsigned int getHcSr04ConfSize();
 
 		bool isDaemon();
 

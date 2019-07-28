@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "PCA9685.hpp"
+#include "HcSr04.hpp"
 
 using namespace std;
 
@@ -17,6 +18,7 @@ namespace raspserver {
 class AppCtx {
 	private:
 		vector<shared_ptr<PCA9685>> i2cs;
+		vector<shared_ptr<HcSr04>> hcsr04s;
 
 		AppCtx(){}
 		~AppCtx(){}
@@ -30,8 +32,16 @@ class AppCtx {
 			i2cs.push_back(p);
 		}
 
+		void add(shared_ptr<HcSr04> p){
+			hcsr04s.push_back(p);
+		}
+
 		shared_ptr<PCA9685> getPCA9685(unsigned int i){
 			return i2cs.at(i);
+		}
+
+		shared_ptr<HcSr04> getHcSr04(unsigned int i){
+			return hcsr04s.at(i);
 		}
 
 		static AppCtx& getInstance() {

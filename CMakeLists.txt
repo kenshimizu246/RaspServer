@@ -24,6 +24,7 @@ src/AppWebSocketWriter.cpp
 src/Session.cpp
 src/SessionManager.cpp
 src/PCA9685.cpp
+src/HcSr04.cpp
 src/actions/NullAction.cpp
 src/actions/PCA9685Action.cpp
 src/actions/RelayAction.cpp
