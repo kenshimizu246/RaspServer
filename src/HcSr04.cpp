@@ -1,3 +1,15 @@
+#include <iostream>
+#include <cctype>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iostream>
+#include <exception>
+#include <stdexcept>
+#include <sstream>
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -54,9 +66,10 @@ double HcSr04::mesure()
   nsec = sigon.tv_nsec - sigoff.tv_nsec;
   diff = ((sec * 1000000000) + nsec);
   diff = diff * 34 / 2000000;
-  printf("sec: %ld\n", sec);
-  printf("nsec: %ld\n", nsec);
-  printf("diff: %f\n", diff);
+  cout << sec << ":" << nsec << ":" << diff << endl; 
+//  printf("sec: %ld\n", sec);
+//  printf("nsec: %ld\n", nsec);
+//  printf("diff: %f\n", diff);
   return diff;
 }
 
